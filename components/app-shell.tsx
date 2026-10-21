@@ -5,7 +5,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Bell,
-  ChevronDown,
   FileText,
   FolderHeart,
   Grid2x2,
@@ -26,6 +25,7 @@ import {
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UploadDialog } from "@/components/upload-dialog";
+import { ProfileDialog } from "@/components/profile-dialog";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home },
@@ -282,13 +282,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 >
                   <Bell className="h-4 w-4" />
                 </button>
-                <div className="flex items-center gap-2 rounded-full border border-border/80 bg-muted/20 px-2.5 py-1.5 text-xs sm:text-sm font-medium text-foreground">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-[10px] font-semibold text-background">
-                    PA
-                  </div>
-                  <span className="hidden md:inline">Personal Archive</span>
-                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground hidden md:inline" />
-                </div>
+                <ProfileDialog variant="desktop" />
               </div>
             </div>
 
@@ -314,9 +308,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
                 <div className="flex items-center gap-2">
                   <UploadDialog />
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-xs font-semibold text-background">
-                    PA
-                  </div>
+                  <ProfileDialog variant="mobile" />
                 </div>
               </div>
 

@@ -12,6 +12,7 @@ import {
   Share2,
   FolderPlus,
   Loader2,
+  Download,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -38,6 +39,7 @@ export function GalleryGrid({
   const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({});
   const [isDeleting, setIsDeleting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   // Filter out any locally deleted photos
   const activePhotos = useMemo(
@@ -73,6 +75,39 @@ export function GalleryGrid({
       }
     } catch {
       setFavoriteOverrides((prev) => ({ ...prev, [id]: currentFav }));
+    }
+  };
+
+  const handleDownloadPhoto = async (
+    e: React.MouseEvent,
+    src: string,
+    filename: string,
+    id: string,
+  ) => {
+    e.stopPropagation();
+    try {
+      setDownloadingId(id);
+      const res = await fetch(src, { mode: "cors" });
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename || "photo.jpg";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      // Fallback: direct window download trigger
+      const link = document.createElement("a");
+      link.href = src;
+      link.target = "_blank";
+      link.download = filename || "photo.jpg";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -219,27 +254,46 @@ export function GalleryGrid({
                   </div>
                 </div>
 
-                {(() => {
-                  const isFav =
-                    favoriteOverrides[photo.id] !== undefined
-                      ? favoriteOverrides[photo.id]
-                      : photo.isFavorite;
-                  return (
-                    <button
-                      type="button"
-                      onClick={() => handleToggleFavorite(photo.id, isFav)}
-                      title={isFav ? "Remove from favorites" : "Add to favorites"}
-                      className={`flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border transition hover:scale-110 active:scale-95 shrink-0 ${
-                        isFav
-                          ? "border-rose-200 bg-rose-500/90 text-white shadow-sm"
-                          : "border-white/20 bg-black/40 text-white/90 hover:bg-black/60"
-                      }`}
-                      aria-label={isFav ? "Remove favorite" : "Add favorite"}
-                    >
-                      <Heart className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isFav ? "fill-current text-white" : ""}`} />
-                    </button>
-                  );
-                })()}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {/* Download Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => handleDownloadPhoto(e, photo.src, photo.filename, photo.id)}
+                    disabled={downloadingId === photo.id}
+                    title="Download photo"
+                    className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white/90 hover:bg-black/60 transition hover:scale-110 active:scale-95 shrink-0"
+                    aria-label={`Download ${photo.filename}`}
+                  >
+                    {downloadingId === photo.id ? (
+                      <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin text-white" />
+                    ) : (
+                      <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
+                    )}
+                  </button>
+
+                  {/* Like / Favorite Button */}
+                  {(() => {
+                    const isFav =
+                      favoriteOverrides[photo.id] !== undefined
+                        ? favoriteOverrides[photo.id]
+                        : photo.isFavorite;
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => handleToggleFavorite(photo.id, isFav)}
+                        title={isFav ? "Remove from favorites" : "Add to favorites"}
+                        className={`flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border transition hover:scale-110 active:scale-95 shrink-0 ${
+                          isFav
+                            ? "border-rose-200 bg-rose-500/90 text-white shadow-sm"
+                            : "border-white/20 bg-black/40 text-white/90 hover:bg-black/60"
+                        }`}
+                        aria-label={isFav ? "Remove favorite" : "Add favorite"}
+                      >
+                        <Heart className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isFav ? "fill-current text-white" : ""}`} />
+                      </button>
+                    );
+                  })()}
+                </div>
               </div>
 
               <button
