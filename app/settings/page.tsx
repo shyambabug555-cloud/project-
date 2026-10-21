@@ -14,8 +14,10 @@ import {
   Server,
   ShieldCheck,
   Sparkles,
+  FolderCog,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CategoryManagerDialog } from "@/components/category-manager-dialog";
 
 export default function SettingsPage() {
   const [dbStatus, setDbStatus] = useState<"checking" | "connected" | "error">("checking");
@@ -197,6 +199,29 @@ export default function SettingsPage() {
             </div>
             <div className="mt-1 text-[11px] text-muted-foreground">Across {stats?.categories ?? 9} categories</div>
           </div>
+        </div>
+      </section>
+
+      {/* Category Management */}
+      <section className="rounded-[28px] border border-border/80 bg-card p-6 shadow-sm space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <FolderCog className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Archive Categories</h2>
+            <p className="text-xs text-muted-foreground">Create, update, or delete categories to organize your archive</p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/80 bg-muted/20 p-4">
+          <div>
+            <div className="text-sm font-semibold text-foreground">Manage Categories</div>
+            <div className="text-xs text-muted-foreground mt-0.5">
+              Add new categories with custom icons and descriptions, or edit/delete existing ones
+            </div>
+          </div>
+          <CategoryManagerDialog />
         </div>
       </section>
 

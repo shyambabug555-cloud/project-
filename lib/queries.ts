@@ -120,6 +120,86 @@ export async function getCategoryById(id: string): Promise<Category | null> {
   };
 }
 
+export async function createCategory(input: {
+  name: string;
+  slug?: string;
+  icon?: string;
+  description?: string;
+}): Promise<Category> {
+  const slug =
+    input.slug?.trim() ||
+    input.name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") ||
+    `category-${Date.now()}`;
+
+  const { data, error } = await supabase
+    .from("categories")
+    .insert({
+      name: input.name.trim(),
+      slug,
+      icon: input.icon?.trim() || "📁",
+      description: input.description?.trim() || "",
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return {
+    id: data.id,
+    name: data.name,
+    slug: data.slug,
+    icon: data.icon,
+    description: data.description,
+  };
+}
+
+export async function updateCategory(
+  id: string,
+  input: {
+    name?: string;
+    slug?: string;
+    icon?: string;
+    description?: string;
+  },
+): Promise<Category | null> {
+  const updatePayload: {
+    name?: string;
+    slug?: string;
+    icon?: string;
+    description?: string;
+  } = {};
+  if (input.name !== undefined) updatePayload.name = input.name.trim();
+  if (input.slug !== undefined) updatePayload.slug = input.slug.trim();
+  if (input.icon !== undefined) updatePayload.icon = input.icon.trim();
+  if (input.description !== undefined) updatePayload.description = input.description.trim();
+
+  const { data, error } = await supabase
+    .from("categories")
+    .update(updatePayload)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error?.code === "PGRST116") return null;
+  if (error) throw error;
+  return {
+    id: data.id,
+    name: data.name,
+    slug: data.slug,
+    icon: data.icon,
+    description: data.description,
+  };
+}
+
+export async function deleteCategory(id: string): Promise<boolean> {
+  const { error } = await supabase.from("categories").delete().eq("id", id);
+  throwIfError(error);
+  return true;
+}
+
 // ─── Photos ──────────────────────────────────────────────────────────
 
 export async function getPhotos(): Promise<Photo[]> {

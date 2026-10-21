@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { DatabaseError } from "@/components/database-error";
 import { GalleryGrid } from "@/components/gallery-grid";
+import { CategoryManagerDialog } from "@/components/category-manager-dialog";
 import { getCategories, getPhotos, type Category, type Photo } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -92,6 +93,7 @@ export default async function GalleryPage({
                 {item.name}
               </Link>
             ))}
+            <CategoryManagerDialog initialCategories={categories} />
           </div>
         </div>
       </div>

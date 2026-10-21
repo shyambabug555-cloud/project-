@@ -13,10 +13,12 @@ import {
   FolderPlus,
   Loader2,
   Download,
+  Play,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { LightboxViewer } from "@/components/lightbox-viewer";
+import { SlideshowModal } from "@/components/slideshow-modal";
 import type { Photo } from "@/lib/queries";
 
 type GalleryGridProps = {
@@ -38,8 +40,13 @@ export function GalleryGrid({
   const [deletedIds, setDeletedIds] = useState<string[]>([]);
   const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({});
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingSingleId, setDeletingSingleId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  // Slideshow state
+  const [slideshowOpen, setSlideshowOpen] = useState(false);
+  const [slideshowStartIndex, setSlideshowStartIndex] = useState(0);
 
   // Filter out any locally deleted photos
   const activePhotos = useMemo(
@@ -98,7 +105,6 @@ export function GalleryGrid({
       document.body.removeChild(link);
       URL.revokeObjectURL(blobUrl);
     } catch {
-      // Fallback: direct window download trigger
       const link = document.createElement("a");
       link.href = src;
       link.target = "_blank";
@@ -108,6 +114,32 @@ export function GalleryGrid({
       document.body.removeChild(link);
     } finally {
       setDownloadingId(null);
+    }
+  };
+
+  const handleDeleteSingle = async (
+    e: React.MouseEvent,
+    id: string,
+    filename: string,
+  ) => {
+    e.stopPropagation();
+    const confirmed = window.confirm(`Permanently delete "${filename}" from your photo archive?`);
+    if (!confirmed) return;
+
+    setDeletingSingleId(id);
+    try {
+      const res = await fetch(`/api/photos/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        setDeletedIds((prev) => [...prev, id]);
+        router.refresh();
+      } else {
+        alert(data.error || "Failed to delete photo");
+      }
+    } catch {
+      alert("Failed to delete photo");
+    } finally {
+      setDeletingSingleId(null);
     }
   };
 
@@ -159,6 +191,34 @@ export function GalleryGrid({
 
   return (
     <div className="space-y-4">
+      {/* Top Toolbar: Photo count & Play Slideshow Button */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card/70 p-2.5 sm:p-3.5 backdrop-blur shadow-sm">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+          <span className="font-semibold text-foreground">{activePhotos.length}</span>{" "}
+          {activePhotos.length === 1 ? "photo" : "photos"} in collection
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Play Slideshow Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setSlideshowStartIndex(0);
+              setSlideshowOpen(true);
+            }}
+            className="flex items-center gap-2 rounded-full bg-foreground text-background px-4 py-2 text-xs sm:text-sm font-semibold hover:bg-foreground/90 hover:scale-[1.02] active:scale-[0.98] transition shadow-md"
+            title="Start Slideshow (Advances every 4 sec with animations)"
+          >
+            <Play className="h-3.5 w-3.5 fill-current" />
+            <span>Play Slideshow</span>
+            <span className="text-[10px] font-mono opacity-80 rounded bg-background/20 px-1 py-0.5">
+              4s
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* Bulk selection action bar */}
       {selectedIds.length > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card/90 p-3 shadow-sm backdrop-blur">
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
@@ -192,7 +252,7 @@ export function GalleryGrid({
               ) : (
                 <Trash2 className="h-3.5 w-3.5" />
               )}
-              Delete
+              Delete Selected
             </button>
             <button
               type="button"
@@ -205,6 +265,7 @@ export function GalleryGrid({
         </div>
       )}
 
+      {/* Photos Grid */}
       <div
         className={
           compact
@@ -220,6 +281,7 @@ export function GalleryGrid({
               key={photo.id}
               className="group relative overflow-hidden rounded-[20px] sm:rounded-[26px] border border-border/80 bg-card shadow-[0_4px_20px_rgba(15,15,15,0.04)] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(15,15,15,0.08)]"
             >
+              {/* Photo click opens lightbox */}
               <button
                 type="button"
                 className="block w-full text-left focus:outline-none focus:ring-2 focus:ring-foreground/30 rounded-[20px] sm:rounded-[26px]"
@@ -238,8 +300,9 @@ export function GalleryGrid({
                 </div>
               </button>
 
-              <div className="absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-black/80 via-black/30 to-transparent p-2 sm:p-3.5 opacity-100">
-                <div className="flex flex-col gap-0.5 sm:gap-1 max-w-[70%] min-w-0">
+              {/* Bottom Card Overlay: Info & Action Buttons */}
+              <div className="absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-black/85 via-black/40 to-transparent p-2 sm:p-3 opacity-100">
+                <div className="flex flex-col gap-0.5 sm:gap-1 max-w-[55%] min-w-0">
                   <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] uppercase tracking-[0.16em] text-white/80">
                     <span>{photo.createdAt?.slice(0, 10)}</span>
                     {photo.metadata?.location && (
@@ -249,25 +312,44 @@ export function GalleryGrid({
                       </>
                     )}
                   </div>
-                  <div className="text-xs sm:text-sm font-medium text-white truncate" title={photo.filename}>
+                  <div
+                    className="text-xs sm:text-sm font-medium text-white truncate"
+                    title={photo.filename}
+                  >
                     {photo.filename}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 shrink-0">
+                {/* Card Action Buttons: Slideshow, Download, Like, Delete */}
+                <div className="flex items-center gap-1 shrink-0">
+                  {/* Quick Slideshow from this photo */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSlideshowStartIndex(index);
+                      setSlideshowOpen(true);
+                    }}
+                    title="Start slideshow from this photo"
+                    className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white/90 hover:bg-black/70 hover:scale-110 active:scale-95 transition shrink-0"
+                    aria-label="Start slideshow"
+                  >
+                    <Play className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-current ml-0.5" />
+                  </button>
+
                   {/* Download Button */}
                   <button
                     type="button"
                     onClick={(e) => handleDownloadPhoto(e, photo.src, photo.filename, photo.id)}
                     disabled={downloadingId === photo.id}
                     title="Download photo"
-                    className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white/90 hover:bg-black/60 transition hover:scale-110 active:scale-95 shrink-0"
+                    className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white/90 hover:bg-black/70 hover:scale-110 active:scale-95 transition shrink-0"
                     aria-label={`Download ${photo.filename}`}
                   >
                     {downloadingId === photo.id ? (
-                      <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin text-white" />
+                      <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin text-white" />
                     ) : (
-                      <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
+                      <Download className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />
                     )}
                   </button>
 
@@ -280,22 +362,42 @@ export function GalleryGrid({
                     return (
                       <button
                         type="button"
-                        onClick={() => handleToggleFavorite(photo.id, isFav)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleFavorite(photo.id, isFav);
+                        }}
                         title={isFav ? "Remove from favorites" : "Add to favorites"}
-                        className={`flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border transition hover:scale-110 active:scale-95 shrink-0 ${
+                        className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border transition hover:scale-110 active:scale-95 shrink-0 ${
                           isFav
                             ? "border-rose-200 bg-rose-500/90 text-white shadow-sm"
-                            : "border-white/20 bg-black/40 text-white/90 hover:bg-black/60"
+                            : "border-white/20 bg-black/40 text-white/90 hover:bg-black/70"
                         }`}
                         aria-label={isFav ? "Remove favorite" : "Add favorite"}
                       >
-                        <Heart className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isFav ? "fill-current text-white" : ""}`} />
+                        <Heart className={`h-3 w-3 sm:h-3.5 sm:w-3.5 ${isFav ? "fill-current text-white" : ""}`} />
                       </button>
                     );
                   })()}
+
+                  {/* Single Delete Photo Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => handleDeleteSingle(e, photo.id, photo.filename)}
+                    disabled={deletingSingleId === photo.id}
+                    title="Delete photo permanently"
+                    className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white/90 hover:bg-rose-600 hover:border-rose-400 transition hover:scale-110 active:scale-95 shrink-0"
+                    aria-label={`Delete ${photo.filename}`}
+                  >
+                    {deletingSingleId === photo.id ? (
+                      <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin text-white" />
+                    ) : (
+                      <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />
+                    )}
+                  </button>
                 </div>
               </div>
 
+              {/* Selection Checkbox */}
               <button
                 type="button"
                 aria-label={selected ? "Deselect photo" : "Select photo"}
@@ -313,6 +415,7 @@ export function GalleryGrid({
         })}
       </div>
 
+      {/* Lightbox Viewer */}
       {activeIndex >= 0 && (
         <LightboxViewer
           slides={slides}
@@ -320,6 +423,19 @@ export function GalleryGrid({
           onClose={() => setActiveIndex(-1)}
         />
       )}
+
+      {/* 4-Second Slideshow with Multiple Selectable Animations */}
+      <SlideshowModal
+        photos={activePhotos}
+        startIndex={slideshowStartIndex}
+        isOpen={slideshowOpen}
+        onClose={() => setSlideshowOpen(false)}
+        onDeletePhoto={(id) => {
+          setDeletedIds((prev) => [...prev, id]);
+          router.refresh();
+        }}
+        onToggleFavorite={(id, currentFav) => handleToggleFavorite(id, currentFav)}
+      />
     </div>
   );
 }
