@@ -157,7 +157,7 @@ export async function createCategory(input: {
 }
 
 export async function updateCategory(
-  id: string,
+  idOrSlug: string,
   input: {
     name?: string;
     slug?: string;
@@ -171,20 +171,44 @@ export async function updateCategory(
     icon?: string;
     description?: string;
   } = {};
-  if (input.name !== undefined) updatePayload.name = input.name.trim();
+  if (input.name !== undefined) {
+    updatePayload.name = input.name.trim();
+    if (input.slug === undefined) {
+      updatePayload.slug = input.name
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+  }
   if (input.slug !== undefined) updatePayload.slug = input.slug.trim();
   if (input.icon !== undefined) updatePayload.icon = input.icon.trim();
   if (input.description !== undefined) updatePayload.description = input.description.trim();
 
-  const { data, error } = await supabase
+  // Try updating by id first
+  let { data, error } = await supabase
     .from("categories")
     .update(updatePayload)
-    .eq("id", id)
+    .eq("id", idOrSlug)
     .select()
     .single();
 
+  // Fallback to updating by slug if id didn't match
+  if (error?.code === "PGRST116" || !data) {
+    const slugRes = await supabase
+      .from("categories")
+      .update(updatePayload)
+      .eq("slug", idOrSlug)
+      .select()
+      .single();
+    data = slugRes.data;
+    error = slugRes.error;
+  }
+
   if (error?.code === "PGRST116") return null;
   if (error) throw error;
+  if (!data) return null;
+
   return {
     id: data.id,
     name: data.name,
@@ -194,10 +218,37 @@ export async function updateCategory(
   };
 }
 
-export async function deleteCategory(id: string): Promise<boolean> {
-  const { error } = await supabase.from("categories").delete().eq("id", id);
+export async function deleteCategory(idOrSlug: string): Promise<boolean> {
+  // First try delete by id
+  const { data: byId } = await supabase
+    .from("categories")
+    .delete()
+    .eq("id", idOrSlug)
+    .select("id");
+
+  if (byId && byId.length > 0) return true;
+
+  // Fallback try delete by slug
+  const { data: bySlug, error } = await supabase
+    .from("categories")
+    .delete()
+    .eq("slug", idOrSlug)
+    .select("id");
+
   throwIfError(error);
-  return true;
+  return (bySlug && bySlug.length > 0) || true;
+}
+
+export async function getCategoryPhotoCounts(): Promise<Record<string, number>> {
+  const { data, error } = await supabase
+    .from("photo_categories")
+    .select("category_id");
+  if (error) return {};
+  const counts: Record<string, number> = {};
+  for (const row of data ?? []) {
+    counts[row.category_id] = (counts[row.category_id] || 0) + 1;
+  }
+  return counts;
 }
 
 // ─── Photos ──────────────────────────────────────────────────────────

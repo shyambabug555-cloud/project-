@@ -300,100 +300,99 @@ export function GalleryGrid({
                 </div>
               </button>
 
-              {/* Bottom Card Overlay: Info & Action Buttons */}
-              <div className="absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-black/85 via-black/40 to-transparent p-2 sm:p-3 opacity-100">
-                <div className="flex flex-col gap-0.5 sm:gap-1 max-w-[55%] min-w-0">
-                  <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] uppercase tracking-[0.16em] text-white/80">
-                    <span>{photo.createdAt?.slice(0, 10)}</span>
-                    {photo.metadata?.location && (
-                      <>
-                        <span>•</span>
-                        <span className="truncate hidden sm:inline">{photo.metadata.location}</span>
-                      </>
-                    )}
-                  </div>
+              {/* Bottom Card Overlay: 2 Lines (Line 1: Name & Date, Line 2: Options/Buttons) */}
+              <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1.5 bg-gradient-to-t from-black/95 via-black/70 to-transparent p-2.5 sm:p-3 opacity-100">
+                {/* Line 1: Photo Name & Date */}
+                <div className="flex items-center justify-between gap-1.5 min-w-0 w-full">
                   <div
-                    className="text-xs sm:text-sm font-medium text-white truncate"
+                    className="text-xs sm:text-sm font-semibold text-white truncate min-w-0"
                     title={photo.filename}
                   >
                     {photo.filename}
                   </div>
+                  <div className="flex items-center gap-1 text-[9px] sm:text-[10px] uppercase tracking-wider text-white/70 shrink-0 font-medium">
+                    <span>{photo.createdAt?.slice(0, 10)}</span>
+                  </div>
                 </div>
 
-                {/* Card Action Buttons: Slideshow, Download, Like, Delete */}
-                <div className="flex items-center gap-1 shrink-0">
-                  {/* Quick Slideshow from this photo */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSlideshowStartIndex(index);
-                      setSlideshowOpen(true);
-                    }}
-                    title="Start slideshow from this photo"
-                    className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white/90 hover:bg-black/70 hover:scale-110 active:scale-95 transition shrink-0"
-                    aria-label="Start slideshow"
-                  >
-                    <Play className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-current ml-0.5" />
-                  </button>
+                {/* Line 2: Options / Action Buttons */}
+                <div className="flex items-center justify-between gap-1 w-full pt-1 border-t border-white/10">
+                  <div className="flex items-center gap-1.5">
+                    {/* Quick Slideshow from this photo */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSlideshowStartIndex(index);
+                        setSlideshowOpen(true);
+                      }}
+                      title="Start slideshow from this photo"
+                      className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white hover:bg-white hover:text-black hover:scale-110 active:scale-95 transition shrink-0"
+                      aria-label="Start slideshow"
+                    >
+                      <Play className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-current ml-0.5" />
+                    </button>
 
-                  {/* Download Button */}
-                  <button
-                    type="button"
-                    onClick={(e) => handleDownloadPhoto(e, photo.src, photo.filename, photo.id)}
-                    disabled={downloadingId === photo.id}
-                    title="Download photo"
-                    className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white/90 hover:bg-black/70 hover:scale-110 active:scale-95 transition shrink-0"
-                    aria-label={`Download ${photo.filename}`}
-                  >
-                    {downloadingId === photo.id ? (
-                      <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin text-white" />
-                    ) : (
-                      <Download className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />
-                    )}
-                  </button>
+                    {/* Download Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => handleDownloadPhoto(e, photo.src, photo.filename, photo.id)}
+                      disabled={downloadingId === photo.id}
+                      title="Download photo"
+                      className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white hover:bg-white hover:text-black hover:scale-110 active:scale-95 transition shrink-0"
+                      aria-label={`Download ${photo.filename}`}
+                    >
+                      {downloadingId === photo.id ? (
+                        <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin text-white" />
+                      ) : (
+                        <Download className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />
+                      )}
+                    </button>
+                  </div>
 
-                  {/* Like / Favorite Button */}
-                  {(() => {
-                    const isFav =
-                      favoriteOverrides[photo.id] !== undefined
-                        ? favoriteOverrides[photo.id]
-                        : photo.isFavorite;
-                    return (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleFavorite(photo.id, isFav);
-                        }}
-                        title={isFav ? "Remove from favorites" : "Add to favorites"}
-                        className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border transition hover:scale-110 active:scale-95 shrink-0 ${
-                          isFav
-                            ? "border-rose-200 bg-rose-500/90 text-white shadow-sm"
-                            : "border-white/20 bg-black/40 text-white/90 hover:bg-black/70"
-                        }`}
-                        aria-label={isFav ? "Remove favorite" : "Add favorite"}
-                      >
-                        <Heart className={`h-3 w-3 sm:h-3.5 sm:w-3.5 ${isFav ? "fill-current text-white" : ""}`} />
-                      </button>
-                    );
-                  })()}
+                  <div className="flex items-center gap-1.5">
+                    {/* Like / Favorite Button */}
+                    {(() => {
+                      const isFav =
+                        favoriteOverrides[photo.id] !== undefined
+                          ? favoriteOverrides[photo.id]
+                          : photo.isFavorite;
+                      return (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleFavorite(photo.id, isFav);
+                          }}
+                          title={isFav ? "Remove from favorites" : "Add to favorites"}
+                          className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border transition hover:scale-110 active:scale-95 shrink-0 ${
+                            isFav
+                              ? "border-rose-400 bg-rose-500 text-white shadow-sm"
+                              : "border-white/20 bg-white/10 text-white hover:bg-white/20"
+                          }`}
+                          aria-label={isFav ? "Remove favorite" : "Add favorite"}
+                        >
+                          <Heart className={`h-3 w-3 sm:h-3.5 sm:w-3.5 ${isFav ? "fill-current text-white" : ""}`} />
+                        </button>
+                      );
+                    })()}
 
-                  {/* Single Delete Photo Button */}
-                  <button
-                    type="button"
-                    onClick={(e) => handleDeleteSingle(e, photo.id, photo.filename)}
-                    disabled={deletingSingleId === photo.id}
-                    title="Delete photo permanently"
-                    className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white/90 hover:bg-rose-600 hover:border-rose-400 transition hover:scale-110 active:scale-95 shrink-0"
-                    aria-label={`Delete ${photo.filename}`}
-                  >
-                    {deletingSingleId === photo.id ? (
-                      <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin text-white" />
-                    ) : (
-                      <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />
-                    )}
-                  </button>
+                    {/* Single Delete Photo Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => handleDeleteSingle(e, photo.id, photo.filename)}
+                      disabled={deletingSingleId === photo.id}
+                      title="Delete photo permanently"
+                      className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white hover:bg-rose-600 hover:border-rose-500 transition hover:scale-110 active:scale-95 shrink-0"
+                      aria-label={`Delete ${photo.filename}`}
+                    >
+                      {deletingSingleId === photo.id ? (
+                        <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin text-white" />
+                      ) : (
+                        <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
 

@@ -21,6 +21,7 @@ import {
   Trees,
   Clock,
   BookmarkCheck,
+  FolderCog,
 } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -30,6 +31,7 @@ import { ProfileDialog } from "@/components/profile-dialog";
 const navItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/gallery", label: "All Photos", icon: Grid2x2 },
+  { href: "/categories", label: "Categories", icon: FolderCog },
   { href: "/albums", label: "Albums", icon: FolderHeart },
   { href: "/favorites", label: "Favorites", icon: Sparkles },
   { href: "/search", label: "Search", icon: Search },

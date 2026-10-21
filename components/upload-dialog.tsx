@@ -632,11 +632,14 @@ export function UploadDialog() {
                     className="w-full rounded-2xl border border-border/80 bg-card text-foreground px-3.5 py-2.5 text-sm outline-none focus:border-foreground/50 transition cursor-pointer"
                   >
                     {categories.length > 0 ? (
-                      categories.map((c) => (
-                        <option key={c.id} value={c.slug} className="bg-card text-foreground">
-                          {c.icon || "📁"} {c.name}
-                        </option>
-                      ))
+                      categories.map((c) => {
+                        const iconEmoji = c.icon && c.icon.length <= 4 ? `${c.icon} ` : "";
+                        return (
+                          <option key={c.id} value={c.slug} className="bg-card text-foreground">
+                            {iconEmoji}{c.name}
+                          </option>
+                        );
+                      })
                     ) : (
                       <>
                         <option value="travel">✈️ Travel</option>

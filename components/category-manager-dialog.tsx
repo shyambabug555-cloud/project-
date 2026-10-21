@@ -16,6 +16,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CategoryIcon } from "@/components/category-icon";
 import type { Category } from "@/lib/queries";
 
 const emptySubscribe = () => () => {};
@@ -420,13 +421,37 @@ export function CategoryManagerDialog({
                             </div>
                             <div>
                               <label className="text-[11px] text-muted-foreground">Icon</label>
-                              <input
-                                type="text"
-                                value={editIcon}
-                                maxLength={4}
-                                onChange={(e) => setEditIcon(e.target.value)}
-                                className="w-full text-center text-base rounded-xl border border-border bg-background px-2 py-1.5 text-foreground outline-none focus:border-foreground transition"
-                              />
+                              <div className="flex items-center gap-1.5">
+                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground overflow-hidden">
+                                  <CategoryIcon icon={editIcon} className="h-4 w-4" />
+                                </span>
+                                <input
+                                  type="text"
+                                  value={editIcon}
+                                  maxLength={16}
+                                  onChange={(e) => setEditIcon(e.target.value)}
+                                  className="w-full text-center text-xs rounded-xl border border-border bg-background px-2 py-1.5 text-foreground outline-none focus:border-foreground transition"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-[11px] text-muted-foreground mb-1 block">Pick emoji icon:</label>
+                            <div className="flex flex-wrap gap-1">
+                              {PRESET_ICONS.slice(0, 12).map((emoji) => (
+                                <button
+                                  key={emoji}
+                                  type="button"
+                                  onClick={() => setEditIcon(emoji)}
+                                  className={`h-6 w-6 rounded text-xs flex items-center justify-center transition ${
+                                    editIcon === emoji
+                                      ? "bg-foreground text-background scale-110 shadow-sm"
+                                      : "bg-muted/40 hover:bg-muted text-foreground"
+                                  }`}
+                                >
+                                  {emoji}
+                                </button>
+                              ))}
                             </div>
                           </div>
                           <div>
@@ -466,8 +491,8 @@ export function CategoryManagerDialog({
                         className="flex items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card/60 p-3 hover:bg-card hover:border-border transition"
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted/40 text-lg">
-                            {cat.icon || "📁"}
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted/60 text-foreground overflow-hidden shadow-inner">
+                            <CategoryIcon icon={cat.icon} className="h-5 w-5" />
                           </span>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
