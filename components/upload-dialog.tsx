@@ -170,44 +170,45 @@ export function UploadDialog() {
       </Button>
 
       {open && mounted && createPortal(
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-[32px] border border-border/80 bg-background text-foreground p-6 shadow-2xl">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-2.5 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-[24px] sm:rounded-[32px] border border-border/80 bg-background text-foreground p-4 sm:p-6 shadow-2xl">
             {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-border/80">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-foreground/10 text-foreground">
-                  <ImageIcon className="h-5 w-5" />
+            <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-border/80">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-2xl bg-foreground/10 text-foreground">
+                  <ImageIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-foreground">Upload to Photo Album</h3>
-                  <p className="text-xs text-muted-foreground">Store in your cloud Supabase database</p>
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground">Upload to Photo Album</h3>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground">Store in your cloud Supabase database</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition"
+                aria-label="Close dialog"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             {/* Mode Tabs: Gallery / Device File vs URL */}
-            <div className="mt-4 flex rounded-2xl border border-border/80 bg-muted/30 p-1">
+            <div className="mt-4 flex flex-col sm:flex-row gap-1 rounded-2xl border border-border/80 bg-muted/30 p-1">
               <button
                 type="button"
                 onClick={() => {
                   setMode("file");
                   setError(null);
                 }}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2 text-xs font-medium transition ${
+                className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2 px-3 text-xs font-medium transition ${
                   mode === "file"
-                    ? "bg-foreground text-background shadow-sm"
+                    ? "bg-foreground text-background shadow-sm font-semibold"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <FolderOpen className="h-4 w-4" />
-                Choose from Gallery / Device
+                <FolderOpen className="h-4 w-4 shrink-0" />
+                <span>Gallery / Device File</span>
               </button>
               <button
                 type="button"
@@ -215,14 +216,14 @@ export function UploadDialog() {
                   setMode("url");
                   setError(null);
                 }}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2 text-xs font-medium transition ${
+                className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2 px-3 text-xs font-medium transition ${
                   mode === "url"
-                    ? "bg-foreground text-background shadow-sm"
+                    ? "bg-foreground text-background shadow-sm font-semibold"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <LinkIcon className="h-4 w-4" />
-                Paste Image Link / URL
+                <LinkIcon className="h-4 w-4 shrink-0" />
+                <span>Paste Image Link / URL</span>
               </button>
             </div>
 
@@ -346,7 +347,7 @@ export function UploadDialog() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
                     Category

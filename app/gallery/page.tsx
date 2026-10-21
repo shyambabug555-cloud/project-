@@ -52,22 +52,40 @@ export default async function GalleryPage({
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
+  const currentCategory = categories.find((c) => c.slug === category);
+  const pageTitle = currentCategory ? `${currentCategory.name} Photos` : "All Photos";
+
   return (
     <div className="space-y-6">
-      <div className="rounded-[28px] border border-border/80 bg-card/80 p-4 shadow-[0_20px_40px_rgba(15,15,15,0.04)] backdrop-blur">
+      <div className="rounded-[28px] border border-border/80 bg-card/80 p-5 shadow-[0_20px_40px_rgba(15,15,15,0.04)] backdrop-blur">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Archive</div>
-            <h1 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-foreground">All photos</h1>
+            <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Archive Gallery</div>
+            <h1 className="mt-1.5 text-2xl sm:text-3xl font-semibold tracking-[-0.05em] text-foreground">
+              {pageTitle}
+            </h1>
+            <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
+              Showing {sorted.length} {sorted.length === 1 ? "photo" : "photos"} in your library
+            </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {categories.slice(0, 6).map((item) => (
+            <Link
+              href="/gallery"
+              className={`rounded-full border px-3 py-1.5 text-xs sm:text-sm font-medium transition ${
+                category === "all"
+                  ? "border-foreground bg-foreground text-background shadow-sm"
+                  : "border-border bg-muted/20 text-muted-foreground hover:bg-accent hover:text-foreground"
+              }`}
+            >
+              All
+            </Link>
+            {categories.map((item) => (
               <Link
                 key={item.id}
                 href={`/gallery?category=${item.slug}`}
-                className={`rounded-full border px-3 py-1.5 text-sm ${
+                className={`rounded-full border px-3 py-1.5 text-xs sm:text-sm font-medium transition ${
                   category === item.slug
-                    ? "border-primary bg-primary text-primary-foreground"
+                    ? "border-foreground bg-foreground text-background shadow-sm"
                     : "border-border bg-muted/20 text-muted-foreground hover:bg-accent hover:text-foreground"
                 }`}
               >
@@ -79,22 +97,28 @@ export default async function GalleryPage({
       </div>
 
       <div className="rounded-[26px] border border-border/80 bg-card/80 p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          {Object.entries(sortLabels).map(([key, label]) => (
-            <Link
-              key={key}
-              href={`/gallery?category=${category}&sort=${key}`}
-              className={`rounded-full border px-3 py-1.5 text-sm ${
-                sort === key
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-border bg-muted/20 text-muted-foreground"
-              }`}
-            >
-              {label}
-            </Link>
-          ))}
-          <Link href="/favorites" className="rounded-full border border-border bg-muted/20 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground">
-            Favorites only
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mr-1">Sort:</span>
+            {Object.entries(sortLabels).map(([key, label]) => (
+              <Link
+                key={key}
+                href={`/gallery?category=${category}&sort=${key}`}
+                className={`rounded-full border px-3 py-1.5 text-xs sm:text-sm font-medium transition ${
+                  sort === key
+                    ? "border-foreground bg-foreground text-background shadow-sm"
+                    : "border-border bg-muted/20 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+          <Link
+            href="/favorites"
+            className="rounded-full border border-border bg-muted/20 px-3.5 py-1.5 text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition"
+          >
+            ★ Favorites only
           </Link>
         </div>
       </div>

@@ -173,8 +173,8 @@ export function GalleryGrid({
       <div
         className={
           compact
-            ? "grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4"
-            : "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+            ? "grid grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+            : "grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
         }
       >
         {activePhotos.map((photo, index) => {
@@ -183,37 +183,38 @@ export function GalleryGrid({
           return (
             <div
               key={photo.id}
-              className="group relative overflow-hidden rounded-[26px] border border-border/80 bg-card shadow-[0_10px_30px_rgba(15,15,15,0.04)] transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_30px_rgba(15,15,15,0.08)]"
+              className="group relative overflow-hidden rounded-[20px] sm:rounded-[26px] border border-border/80 bg-card shadow-[0_4px_20px_rgba(15,15,15,0.04)] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(15,15,15,0.08)]"
             >
               <button
                 type="button"
-                className="block w-full text-left"
+                className="block w-full text-left focus:outline-none focus:ring-2 focus:ring-foreground/30 rounded-[20px] sm:rounded-[26px]"
                 onClick={() => setActiveIndex(index)}
+                aria-label={`View full image for ${photo.filename}`}
               >
                 <div className="relative aspect-[4/5] overflow-hidden bg-muted">
                   <Image
                     src={photo.thumbnailSrc}
                     alt={photo.filename}
                     fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                     className="object-cover transition duration-500 group-hover:scale-105"
                     unoptimized={!photo.thumbnailSrc.includes("images.unsplash.com")}
                   />
                 </div>
               </button>
 
-              <div className="absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-black/75 via-black/20 to-transparent p-3.5 opacity-100">
-                <div className="flex flex-col gap-1 max-w-[70%]">
-                  <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/80">
+              <div className="absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-black/80 via-black/30 to-transparent p-2 sm:p-3.5 opacity-100">
+                <div className="flex flex-col gap-0.5 sm:gap-1 max-w-[70%] min-w-0">
+                  <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] uppercase tracking-[0.16em] text-white/80">
                     <span>{photo.createdAt?.slice(0, 10)}</span>
                     {photo.metadata?.location && (
                       <>
                         <span>•</span>
-                        <span className="truncate">{photo.metadata.location}</span>
+                        <span className="truncate hidden sm:inline">{photo.metadata.location}</span>
                       </>
                     )}
                   </div>
-                  <div className="text-sm font-medium text-white truncate" title={photo.filename}>
+                  <div className="text-xs sm:text-sm font-medium text-white truncate" title={photo.filename}>
                     {photo.filename}
                   </div>
                 </div>
@@ -228,14 +229,14 @@ export function GalleryGrid({
                       type="button"
                       onClick={() => handleToggleFavorite(photo.id, isFav)}
                       title={isFav ? "Remove from favorites" : "Add to favorites"}
-                      className={`flex h-9 w-9 items-center justify-center rounded-full border transition hover:scale-110 active:scale-95 ${
+                      className={`flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border transition hover:scale-110 active:scale-95 shrink-0 ${
                         isFav
                           ? "border-rose-200 bg-rose-500/90 text-white shadow-sm"
-                          : "border-white/20 bg-black/30 text-white/90 hover:bg-black/50"
+                          : "border-white/20 bg-black/40 text-white/90 hover:bg-black/60"
                       }`}
                       aria-label={isFav ? "Remove favorite" : "Add favorite"}
                     >
-                      <Heart className={`h-4 w-4 ${isFav ? "fill-current text-white" : ""}`} />
+                      <Heart className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isFav ? "fill-current text-white" : ""}`} />
                     </button>
                   );
                 })()}
@@ -245,13 +246,13 @@ export function GalleryGrid({
                 type="button"
                 aria-label={selected ? "Deselect photo" : "Select photo"}
                 onClick={() => toggleSelected(photo.id)}
-                className={`absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border transition ${
+                className={`absolute left-2 top-2 sm:left-3 sm:top-3 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border transition ${
                   selected
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-white/30 bg-black/25 text-white/80 backdrop-blur-sm hover:scale-105"
+                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                    : "border-white/40 bg-black/35 text-white/90 backdrop-blur-sm hover:scale-105"
                 }`}
               >
-                {selected ? <Check className="h-4 w-4" /> : <span className="h-2.5 w-2.5 rounded-full bg-current" />}
+                {selected ? <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <span className="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-current" />}
               </button>
             </div>
           );

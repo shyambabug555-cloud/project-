@@ -22,41 +22,47 @@ export default async function AlbumsPage() {
         <h1 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-foreground">Albums</h1>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
         {albums.map((album) => {
           const cover = photos.find((photo) => photo.id === album.coverPhotoId);
 
           return (
             <Link
               key={album.id}
-              href="/gallery"
-              className="group overflow-hidden rounded-[28px] border border-border/80 bg-card p-3 shadow-sm transition hover:-translate-y-1"
+              href={`/albums/${album.id}`}
+              className="group overflow-hidden rounded-[28px] border border-border/80 bg-card p-3 shadow-sm transition hover:-translate-y-1 hover:border-foreground/30 focus:outline-none focus:ring-2 focus:ring-foreground/20"
             >
               {cover ? (
-                <div className="relative h-64 overflow-hidden rounded-[22px]">
+                <div className="relative h-56 sm:h-64 overflow-hidden rounded-[22px] bg-muted">
                   <Image
                     src={cover.thumbnailSrc}
                     alt={album.name}
                     fill
-                    sizes="(max-width:768px) 100vw, 33vw"
+                    sizes="(max-width:640px) 100vw, (max-width:1024px) 50vw, 33vw"
                     className="object-cover transition duration-500 group-hover:scale-105"
                     unoptimized={!cover.thumbnailSrc.includes("images.unsplash.com")}
                   />
                 </div>
-              ) : <div className="flex h-64 items-center justify-center rounded-[22px] bg-muted text-sm text-muted-foreground">No cover photo</div>}
+              ) : (
+                <div className="flex h-56 sm:h-64 items-center justify-center rounded-[22px] bg-muted text-sm text-muted-foreground">
+                  No cover photo
+                </div>
+              )}
               <div className="mt-4 flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-xl font-semibold text-foreground">{album.name}</div>
-                  <div className="mt-2 text-sm leading-6 text-muted-foreground">{album.description}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-lg sm:text-xl font-semibold text-foreground truncate">{album.name}</div>
+                  <div className="mt-1 text-xs sm:text-sm leading-relaxed text-muted-foreground line-clamp-2">
+                    {album.description}
+                  </div>
                 </div>
                 {album.isFeatured && (
-                  <span className="rounded-full bg-foreground px-2 py-1 text-[10px] uppercase tracking-[0.18em] text-background">
+                  <span className="shrink-0 rounded-full bg-foreground px-2.5 py-0.5 text-[10px] uppercase tracking-[0.18em] text-background font-semibold">
                     Featured
                   </span>
                 )}
               </div>
-              <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
-                <span>{album.photoIds.length} images</span>
+              <div className="mt-4 flex items-center justify-between text-xs sm:text-sm text-muted-foreground border-t border-border/60 pt-3">
+                <span>{album.photoIds.length} {album.photoIds.length === 1 ? "image" : "images"}</span>
                 <span>{new Date(album.updatedAt).toLocaleDateString()}</span>
               </div>
             </Link>
